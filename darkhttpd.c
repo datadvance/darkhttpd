@@ -309,6 +309,7 @@ static uint64_t num_requests = 0, total_in = 0, total_out = 0;
 static int accepting = 1;           /* set to 0 to stop accept()ing */
 static int syslog_enabled = 0;
 static volatile int running = 1; /* signal handler sets this to false */
+static char *additional_headers = ""; /* additional HTTP headers for responce */
 
 #define INVALID_UID ((uid_t) -1)
 #define INVALID_GID ((gid_t) -1)
@@ -945,6 +946,8 @@ static void usage(const char *argv0) {
     "\t\tIf the client requested HTTP, forward to HTTPS.\n"
     "\t\tThis is useful if darkhttpd is behind a reverse proxy\n"
     "\t\tthat supports SSL.\n\n");
+    printf("\t--additional-headers\n"
+    "\t\tAdditional HTTP headers in the response.\n\n");
 #ifdef HAVE_INET6
     printf("\t--ipv6\n"
     "\t\tListen on IPv6 address.\n\n");
@@ -1160,6 +1163,22 @@ static void parse_commandline(const int argc, char *argv[]) {
         }
         else if (strcmp(argv[i], "--forward-https") == 0) {
             forward_to_https = 1;
+        }
+        else if (strcmp(argv[i], "--additional-headers") == 0) {
+            if (++i >= argc)
+                errx(1, "missing value after --additional-headers");          
+            
+            char value[strlen(argv[i])];
+            char *headers = malloc(strlen(argv[i])+256);
+            strcpy(value, argv[i]);
+
+            char *token = strtok(value, ";");
+            while(token) {
+                strcat(headers, token);
+                strcat(headers, "\r\n");                
+                token = strtok(NULL, ";");
+            }
+            additional_headers = headers;
         }
 #ifdef HAVE_INET6
         else if (strcmp(argv[i], "--ipv6") == 0) {
@@ -2249,10 +2268,11 @@ static void process_get(struct connection *conn) {
             "Content-Length: %llu\r\n"
             "Content-Type: %s\r\n"
             "Last-Modified: %s\r\n"
+            "%s"
             "\r\n"
             ,
             rfc1123_date(date, now), server_hdr, keep_alive(conn),
-            llu(conn->reply_length), mimetype, lastmod
+            llu(conn->reply_length), mimetype, lastmod, additional_headers
         );
         conn->http_code = 200;
     }

@@ -1,4 +1,10 @@
-# darkhttpd
+# darkhttpd DA fork
+
+The same as original https://unix4lyfe.org/darkhttpd/ with additional command-line parameter `--additional-header` which used to set additions HTTP response headers, like:
+
+```bash
+./darkhttpd ./static/ --additional-headers "Cache-control: private, no-cache;X-Flag: Example header value" 
+```
 
 https://unix4lyfe.org/darkhttpd/
 
