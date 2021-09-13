@@ -1175,7 +1175,7 @@ static void parse_commandline(const int argc, char *argv[]) {
 
             char *token = strtok(value, ";");
             while(token) {
-                headers = (char *)realloc(headers, strlen(headers) + strlen(token) + 2);
+                headers = realloc(headers, strlen(headers) + strlen(token) + 2);
                 strcat(headers, token);
                 strcat(headers, "\r\n");                
                 token = strtok(NULL, ";");
