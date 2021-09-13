@@ -1169,11 +1169,13 @@ static void parse_commandline(const int argc, char *argv[]) {
                 errx(1, "missing value after --additional-headers");          
             
             char value[strlen(argv[i])];
-            char *headers = malloc(strlen(argv[i])+256);
             strcpy(value, argv[i]);
+
+            char *headers = calloc(0,0);
 
             char *token = strtok(value, ";");
             while(token) {
+                headers = (char *)realloc(headers, strlen(headers) + strlen(token) + 2);
                 strcat(headers, token);
                 strcat(headers, "\r\n");                
                 token = strtok(NULL, ";");
